@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en-us" data-lt-installed="true" class="gr__cs_wellesley_edu"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Enmo Ren & Rachel Zhang Final Project</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#157878">
+    <link href="assets/css/css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body data-gr-c-s-loaded="true">
+<section class="page-header">
+    <h1 class="project-name">Computer Graphics Final Project</h1>
+    <h2 class="project-tagline"> Enmo Ren & Rachel Zhang • Wellesley College • Fall 2019</h2>
+    <a target="_blank" href="http://cs.wellesley.edu/~er7/cs307-graphics-project-alpha/demo.html" class="btn">Demo</a>
+    <a target="_blank" href="https://www.youtube.com/watch?v=SBg6dAE3mI0" class="btn">Inspiration</a>
+</section>
+
+<section class="main-content">
+    <h2 id="interactive-zoetropes">Interactive zoetropes</h2>
+    <p><img src="assets/img/screenshot.png" alt="Screenshot"></p>
+    <ul>
+      <li>We built an interactive scene that includes multiple zoetropes, each of which is generated with random size parameters and placed at a random location.</li>
+      <li>The mouse hover over a zoetrope triggers the rotation of that zoetrope.</li>
+    </ul>
+
+    <h3 id="inspiration">Inspiration</h3>
+    <p>Our inspiration for this project was the <a href="https://www.youtube.com/watch?v=SBg6dAE3mI0">zoetrope</a>, which is a pre-film animation device that was spun to show a looped animation strip in motion. Similar to a flipbook, it shows a sequence of images in succession with adjustable speed. It was invented in the mid-1800's and a popular toy at the time. Nowadays it is much less known, overtaken by film and web animation, but it remains an important part of animation history and its tactile, interactive nature still fascinates artists and animation fans today. </p>
+
+    <h3 id ="implementation">Implementation of Zoetrope</h3>
+    <h4 id ="geo">Geometry</h4>
+    <p>The geometry of our zoetrope is made up of multiple nested object frames. The more complicated parts (base and slit cylinder) were created in their own functions with adjustable size parameters.</p>
+    <p style="text-align:center;"><img src="assets/img/disec2.png" width=50%></p>
+    <ul>
+      <li>Main cylinder: Cylinder geometry with open ends. Later we created a second, slightly smaller cylinder on the inside to be able to map different textures to the outside and inside without interference.
+      </li>
+      <li>Rims: Toruses, and a flat cylinder for the bottom base.
+      </li>
+      <li>Slit Cylinder: A cylinder with evenly spaced slits around the edge. We implemented this by positioning and rotating multiple cylinder pieces in a nested coordinate frame. It has adjustable parameters for slit width and number of slits.
+      </li>
+      <li>Base: A lathe geometry of a Bezier curve. </li>
+    </ul>
+    <p style="text-align:center;"><img src="assets/img/disec.png" width=40%></p>
+
+    <h4 id ="mat">Materials</h4>
+    <p>We started off by using Phong materials (with ambient and directional light), and texture mapping the zoetrope strip to the inside of the cylinder. We had 3 different materials:</p>
+    <ol>
+      <li>a white Phong material for the inside of the cylinder, with the zoetrope strip texture mapped to it. This has only the backside visible. </li>
+      <li>a brown Phong material for the outside of the cylinder. This had only the front side visible.</li>
+      <li>a brown Phong material for the rims, slit cylinder, and base. This had both sides visible.</li>
+    </ol>
+    <p>Since the brown color for materials (2) and (3) were meant to represent wood and copper respectively, we decided to texture map those materials as well.</P>
+    <p style="text-align:center;"><img src="assets/img/combinedMat.jpg" width=40%></p>
+    <p>Finally, to add more realism to our scene, we added bump maps to the wood and copper materials. We also changed to using MeshStandardMaterial, which extends the Phong lighting model to give more realism to metallic surfaces.</p>
+    <p style="text-align:center;"><img src="assets/img/material.gif" width=60%></p>
+
+    <h3 id="ship">Animation</h3>
+    <p>When viewing the image strip through the slits at the top of the zoetrope, it creates an illusion of animation as it rotates around its y-axis. In our implementation, each individual zoetrope is a 3D object with its own y-axis, so we updated the rotation parameters of each zoetrope by the angular rotation velocity at every call of updateState function. We experimented with the rotation speed and the width of slits at the top of the zoetrope to find the best parameters to create the illusion of animation. </p>
+    <p>Due to the fact that we are using texture mapping for an animated object, we spent a while optimizing the code structure to ensure that the performance of animation would not be slowed down because of the texture mapping. We noticed that loading the textures during each animation frame would slow down the animation, but had problems with the animation when we only loaded textures at initialization. After trial and error, we handled the animation separately depending on whether the textures are successfully loaded to the object or not. The animation only starts after all of the textures are mapped and all the zoetropes are loaded into the array containing the zoetropes.</p>
+
+    <h3 id="ship">User Interaction</h3>
+    <p>In our scene, we have 42 zoetropes in total. Each zoetrope has various animation sequences mapped onto the inside of the cylinder, so the user can move around the scene and spin different zoetropes to experience different historical animation sequences. To implement the user interaction, we opted for using a raycaster to detect mouse hover on objects. When the user hovers over a zoetrope with his/her mouse, the index of that zoetrope will be stored and later be used for updating the rotation of the zoetrope in the animation loop. </p>
+    <p style="text-align:center;"><img src="assets/img/captured.gif" width=40%></p>
+
+    <h3 id="ship">Effects</h3>
+    <p>To give our scene more realism, we added shadow for each zoetrope. A point light source is set above the plane to cast shadows, with the ground plane set to receive shadows. We also wanted to create a sense of there being endless zoetropes in our scene, so we added fog, which is a way of fading to a specific color based on the distance from the camera. In three.js, fog is a property of the scene, which can be set with a color and intensity. The images below show the effect with and without fog being set for our scene.</p>
+    <p style="text-align:center;"><img src="assets/img/comparing.jpg" width=100%></p>
+    <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/sarahwalters/wellesley-graphics">wellesley-graphics</a> is maintained by <a href="https://github.com/sarahwalters">sarahwalters</a>.</span>
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com/">GitHub Pages</a>.</span>
+    </footer>
+</section>
+</body><span class="gr__tooltip"><span class="gr__tooltip-content"></span><i class="gr__tooltip-logo"></i><span class="gr__triangle"></span></span></html>

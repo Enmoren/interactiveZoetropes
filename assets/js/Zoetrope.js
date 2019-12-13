@@ -17,8 +17,8 @@ var params = {
   cylinderRadius: 10,
   cylinderRim: 11,
   cylinderHeight: 6,
-  numCylinderSlit: 12, //changed
-  slitGapAngle:0.15, //changed
+  numCylinderSlit: 12,
+  slitGapAngle:0.15,
   cylinderRimHeight: 0.3,
   cylinderTorusRotation: Math.PI*0.5,
   baseTopRadius:1,
@@ -26,9 +26,9 @@ var params = {
   baseHeight:10,
   baseNumSeg:20,
   color: 0xB88451,
-  floorSize: 300, //changed
+  floorSize: 300,
   //floorHeight: 100,
-  objPerRow: 6 //added
+  objPerRow: 6
 }
 
 // declare global materials for zoetrope
@@ -54,10 +54,10 @@ function displayZoetrope(image, rotation, zoetrope, index){ //added parameter
       imageBackMaterial = new THREE.MeshStandardMaterial( {
         color: params.color,
         side: THREE.FrontSide,
-        map: image[1],
+        map: image[0],
         roughness: .5,
         metalness: 0.2,
-        bumpMap: image[2],
+        bumpMap: image[3],
         // roughnessMap: image[3],
         metalnessMap: null,
         envMap: null // important -- especially for metals!
@@ -66,10 +66,10 @@ function displayZoetrope(image, rotation, zoetrope, index){ //added parameter
       baseMaterial = new THREE.MeshStandardMaterial( {
         color: params.color,
         side: THREE.DoubleSide,
-        map: image[0],
+        map: image[1],
         roughness: .5,
         metalness: 0.7,
-        bumpMap: image[3],
+        bumpMap: image[2],
         // roughnessMap: image[3],
         metalnessMap: null,
         envMap: null // important -- especially for metals!
@@ -79,9 +79,6 @@ function displayZoetrope(image, rotation, zoetrope, index){ //added parameter
       for (var i = 4; i < image.length; i++) {
         imageMaterials.push(new THREE.MeshPhongMaterial({color: 0xFFFFFF, side: THREE.BackSide, map: image[i]}));
       }
-      // baseMaterial = new THREE.MeshPhongMaterial({color: params.color, side: THREE.DoubleSide, map: image[1]});
-      // cylinderMaterial = new THREE.MeshPhongMaterial({color: params.color, side: THREE.DoubleSide,  map: image[2]});
-      // imageBackMaterial = new THREE.MeshPhongMaterial({color: params.color, side: THREE.FrontSide, map: image[2]});
       var matIndex = (index + Math.floor(index/params.objPerRow))%imageMaterials.length;
       var zoetrope = createZoetrope(imageMaterials[matIndex], baseMaterial, cylinderMaterial);
       zoetrope.position.x = (index%params.objPerRow)*(params.floorSize/params.objPerRow)-0.5*params.floorSize;

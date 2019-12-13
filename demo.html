@@ -43,17 +43,19 @@
     //set the scene
     var scene = new THREE.Scene();
     scene.background = new THREE.Color(0x59472B);
-    scene.fog = new THREE.Fog(0x59472B, 1, 400); //black fog
+    scene.fog = new THREE.Fog(0x59472B, 1, 400); //fog
     var renderer = new THREE.WebGLRenderer( {antialias: true});
     renderer.shadowMap.enabled = true;
     TW.mainInit(renderer,scene);
 
+    // set raycaster and event listener for user interaction
     var raycaster = new THREE.Raycaster();
     var mouse = new THREE.Vector2();
     var c1 = renderer.domElement;
     document.addEventListener('mousemove', onMouseMove, false);
 
     //=====================================================================================
+    //global variables for animation
     var animationID = null;
     var startAngle =  0;
     var numZoetropes = 42;
@@ -75,47 +77,52 @@
       rotationP[i] = startAngle;
     }
 
-    //load image that displays a sequence of cat jumping motion
+    //load zoetrope strips and textures
     TW.loadTextures(["assets/img/wood.jpg","assets/img/copper.jpg", "assets/img/copper_black.jpg",
-    "assets/img/wood_black.jpg","assets/img/jump.jpg","assets/img/horse.jpg", "assets/img/rabbit.jpg",
-    "assets/img/ball.jpg","assets/img/donald.jpg","assets/img/goffy.jpg","assets/img/jump.jpg",
-    "assets/img/rolling.jpg","assets/img/swing.jpg",],
+    "assets/img/wood_black.jpg","assets/img/swing.jpg","assets/img/horse.jpg", "assets/img/rabbit.jpg",
+    "assets/img/ball.jpg","assets/img/rolling.jpg","assets/img/donald.jpg","assets/img/goffy.jpg",
+    "assets/img/jump.jpg"],
             function (image) {
+                //create zoetropes using loaded textures
                 for (var i = 0; i < numZoetropes; i++) {
                   zoetropes[i] = displayZoetrope(image, rotationP[i], zoetropes[i], i);//extra parameter
                 }
             } );
 
+    //create ground
     var geometry = new THREE.PlaneBufferGeometry( 10, 10 );
   	var planeMaterial = new THREE.MeshPhongMaterial( { color: 0xffb851 } );
   	var ground = new THREE.Mesh( geometry, planeMaterial );
-  	ground.position.set( 0, -10, 0 );
+  	ground.position.set( 0, -10, 0 ); //10 is the height of the base of the zoetrope
   	ground.rotation.x = - Math.PI / 2;
   	ground.scale.set( 100, 100, 100 );
     ground.receiveShadow = true;
     scene.add(ground);
     //=====================================================================================
+    //animation function
     function animate(timestamp) {
       updateState();
       animationID = requestAnimationFrame(animate);
     }
 
+    //updates state of animation; called on every animation frame
     function updateState() {
 
       //creating zoetropes while textures are loading
       if (zoetropes[0] == null){
         TW.loadTextures(["assets/img/wood.jpg","assets/img/copper.jpg", "assets/img/copper_black.jpg",
-        "assets/img/wood_black.jpg","assets/img/jump.jpg","assets/img/horse.jpg", "assets/img/rabbit.jpg",
-        "assets/img/ball.jpg","assets/img/donald.jpg","assets/img/goffy.jpg","assets/img/jump.jpg",
-        "assets/img/rolling.jpg","assets/img/swing.jpg",],
+        "assets/img/wood_black.jpg","assets/img/swing.jpg","assets/img/horse.jpg", "assets/img/rabbit.jpg",
+        "assets/img/ball.jpg","assets/img/rolling.jpg","assets/img/donald.jpg","assets/img/goffy.jpg",
+        "assets/img/jump.jpg"],
                     function (image) {
                       for (var i = 0; i < numZoetropes; i++) {
                           zoetropes[i] = displayZoetrope(image, rotationP[i], zoetropes[i], i);//extra parameter
                         }
                     } );
       }
-      //after textures are loaded
+      //textures are loaded
       else {
+        //update rotation of currently user selected zoetrope
         if (rotatingIndex != -1) {
           //rotate and rerender zoetrope
           zoetropes[rotatingIndex] = displayZoetrope(null, rotationP[rotatingIndex], zoetropes[rotatingIndex], i);//extra parameter
@@ -126,13 +133,11 @@
       }
     }
 
-      //=====================================================================================
-
-      //use global for the lights (and targets)
+   //=====================================================================================
+      //use global for the lights
       var dirLight,ambLight,pointLight;
 
       function makeLights() {
-
         dirLight = new THREE.DirectionalLight(0xFFFFFF,.7);
         dirLight.position.set(50, 30, 50);
         dirLight.castShadow = true;
@@ -147,10 +152,9 @@
         scene.add(pointLight);
       }
       makeLights();
-
-      //=====================================================================================
+   //=====================================================================================
+     //event listener to detect mouse movement
      function onMouseMove (event) {
-       event.preventDefault();
         if (event.target == c1) {
            // use canvas offset to determine mouse coordinates in canvas coordinate frame
            var rect = event.target.getBoundingClientRect();
@@ -159,28 +163,26 @@
         } else {
            return;
         }
-        // get mouse coordinates in the range from -1 to +1 (canvas is 800 x 500 pixels)
+        // get mouse coordinates in the range from -1 to +1
         mouse.x = (canvasX / w) * 2 - 1;
         mouse.y = -(canvasY / h) * 2 + 1;
 
+        //cannot be run while textures are loading
         if (zoetropes[0] != null){
-          //moved raycasting
-          //mouse is updated when mouse is moved
           raycaster.setFromCamera(mouse, camera);
           //find zoetrope with minimum distance from raycaster
-          var min = 10000;
-          var minIndex = -1;
+          var min = 10000; //greater than all possible distance
+          //checks each zoetrope to see if intersects raycaster
           for (var i = 0 ; i < numZoetropes; i++){
             var intersects = raycaster.intersectObject(zoetropes[i], true);
             if (intersects.length > 0){
               if (min > intersects[0].distance){
-                minIndex = i;
+                //current zoetrope[i] is the closest zoetrope that intersects raycaster
+                rotatingIndex = i; //updates current selected zoetrope (rotates next animation frame)
                 min =  intersects[0].distance;
               }
             }
           }
-          //update rotating index
-          rotatingIndex = minIndex;
         }
      }
 
